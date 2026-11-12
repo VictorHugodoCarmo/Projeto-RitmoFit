@@ -23,24 +23,43 @@ O esquema SQLite contém cinco tabelas e quatro chaves estrangeiras. Cada partic
 - **Modelo físico** — [banco/ritmofit.sql](banco/ritmofit.sql), com a criação das tabelas e das restrições.
 - **Diagrama de classes** — [docs/diagrama_classes.pdf](docs/diagrama_classes.pdf), com as classes, os atributos, os métodos e as multiplicidades.
 
-## Back-end da Etapa 2
+## Executar
 
-- [models.py](py/models.py) reúne as classes do RitmoFit e o cálculo do progresso.
-- [dao.py](py/dao.py) usa SQLite para cadastrar registros e recuperar os dados.
-- [app.py](py/app.py) recebe as requisições HTTP e devolve as respostas em JSON.
-
-### Executar
-
-Use Python 3.12 ou superior com SQLite 3.37 ou superior. Execute estes comandos na raiz do projeto.
+Use Python 3.12 ou superior com SQLite 3.37 ou superior. Na raiz do projeto, instale o Flask e inicie o servidor.
 
 ```powershell
 python -m pip install -r .\py\requirements.txt
 python .\py\app.py
 ```
 
-Na primeira execução, o programa usa o SQL da Etapa 1 para criar `ritmofit.db`. Abra [http://127.0.0.1:5000](http://127.0.0.1:5000/) para verificar se a API está em execução.
+Abra [o RitmoFit no navegador](http://127.0.0.1:5000/). Na primeira execução, o Flask usa o SQL da Etapa 1 para criar `ritmofit.db`.
 
-### Rotas
+## Apresentação
+
+Para iniciar com dados fictícios, rode `python .\py\app.py --demo`. O modo de demonstração usa `ritmofit-demo.db` e salva as alterações nesse arquivo. Na primeira execução, a inscrição de Ana Ribeiro na Caminhada da semana mostra **65 de 90 minutos**. Registre mais **25 minutos** nessa inscrição para ver **Meta atingida**. Reabra a página para conferir que o registro foi salvo.
+
+Para testar o fluxo com cadastros próprios, crie uma modalidade e um participante. Em **Desafios**, crie um desafio, clique em **Inscrever** e selecione a pessoa. Registre uma atividade dentro do período. Use **Ver progresso** na lista de inscrições para consultar o total e os minutos restantes.
+
+## GitHub Pages
+
+A [demonstração online](https://victorhugodocarmo.github.io/Projeto-RitmoFit/) carrega arquivos JSON com dados fictícios via Fetch. É possível navegar pelas listas, filtrar desafios e escolher uma inscrição para consultar seu progresso. Os formulários de cadastro, edição e exclusão usam Flask e SQLite na execução local.
+
+No GitHub, abra **Settings → Pages**. Em **Source**, escolha **Deploy from a branch** e selecione **main** e **/docs**. O arquivo inicial da publicação fica em `docs/index.html`.
+
+Para atualizar a versão online depois de alterar a interface, execute `python .\py\gerar_pages.py` e inclua os arquivos atualizados de `docs/` no commit.
+
+## Organização
+
+| Arquivo | Responsabilidade |
+|---|---|
+| [py/templates/index.html](py/templates/index.html) | Painel, listas e formulários em HTML |
+| [py/static/css/estilo.css](py/static/css/estilo.css) | Layout responsivo e identidade visual |
+| [py/static/js/ritmofit.js](py/static/js/ritmofit.js) | Envio de formulários, Fetch e atualização das listas |
+| [py/app.py](py/app.py) | Página inicial e rotas Flask que recebem e devolvem JSON |
+| [py/models.py](py/models.py) | Classes do RitmoFit e cálculo de progresso |
+| [py/dao.py](py/dao.py) | Operações no SQLite |
+
+## API
 
 | Caminho | GET | POST |
 |---|---|---|
@@ -51,17 +70,6 @@ Na primeira execução, o programa usa o SQL da Etapa 1 para criar `ritmofit.db`
 | `/atividades` | Lista atividades | Registra data e duração na inscrição |
 | `/inscricoes/<id>/progresso` | Mostra o total, a meta e os minutos restantes | — |
 
-### Testar o fluxo
+As cinco coleções também aceitam `PUT /<coleção>/<id>` para editar e `DELETE /<coleção>/<id>` para excluir. Os formulários enviam JSON e as listas são consultadas novamente após cada alteração. As chaves estrangeiras protegem cadastros que ainda estão vinculados a outros registros.
 
-Use o navegador para as consultas GET. Para cadastrar, use o Postman ou o Thunder Client com o método POST e o corpo em JSON. A resposta de cada cadastro devolve o ID gerado. Nos exemplos abaixo, substitua `1` pelos IDs recebidos se o banco já tiver dados.
-
-| Ordem | Rota POST | Corpo JSON |
-|---|---|---|
-| 1 | `/participantes` | `{"nome": "Ana", "email": "ana@example.com"}` |
-| 2 | `/modalidades` | `{"nome": "Caminhada"}` |
-| 3 | `/desafios` | `{"id_modalidade": 1, "titulo": "Caminhada da semana", "data_inicio": "2026-11-09", "data_fim": "2026-11-15", "meta_minutos": 90}` |
-| 4 | `/inscricoes` | `{"id_participante": 1, "id_desafio": 1, "data_inscricao": "2026-11-09"}` |
-| 5 | `/atividades` | `{"id_inscricao": 1, "data_atividade": "2026-11-10", "duracao_minutos": 30}` |
-| 6 | `/atividades` | `{"id_inscricao": 1, "data_atividade": "2026-11-12", "duracao_minutos": 35}` |
-
-Ao consultar `GET /inscricoes/1/progresso`, o resultado esperado é de **65 minutos de 90**, com **25 minutos restantes**.
+Use [a rota de status](http://127.0.0.1:5000/api) para conferir a resposta JSON do Flask.

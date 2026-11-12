@@ -1,0 +1,26 @@
+[
+  {
+    "data_inscricao": "2026-11-09",
+    "id_desafio": 1,
+    "id_inscricao": 1,
+    "id_participante": 1
+  },
+  {
+    "data_inscricao": "2026-11-09",
+    "id_desafio": 2,
+    "id_inscricao": 2,
+    "id_participante": 2
+  },
+  {
+    "data_inscricao": "2026-11-09",
+    "id_desafio": 3,
+    "id_inscricao": 3,
+    "id_participante": 3
+  },
+  {
+    "data_inscricao": "2026-11-09",
+    "id_desafio": 1,
+    "id_inscricao": 4,
+    "id_participante": 4
+  }
+]

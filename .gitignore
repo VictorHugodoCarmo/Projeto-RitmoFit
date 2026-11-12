@@ -2,3 +2,5 @@
 __pycache__/
 ritmofit.db
 ritmofit.db-*
+ritmofit-demo.db
+ritmofit-demo.db-*

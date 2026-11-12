@@ -1,0 +1,14 @@
+[
+  {
+    "id_modalidade": 1,
+    "nome": "Caminhada"
+  },
+  {
+    "id_modalidade": 2,
+    "nome": "Corrida"
+  },
+  {
+    "id_modalidade": 3,
+    "nome": "Ciclismo"
+  }
+]

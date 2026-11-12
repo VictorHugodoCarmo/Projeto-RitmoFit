@@ -1,0 +1,26 @@
+[
+  {
+    "data_fim": "2026-11-19",
+    "data_inicio": "2026-11-09",
+    "id_desafio": 1,
+    "id_modalidade": 1,
+    "meta_minutos": 90,
+    "titulo": "Caminhada da semana"
+  },
+  {
+    "data_fim": "2026-11-19",
+    "data_inicio": "2026-11-09",
+    "id_desafio": 2,
+    "id_modalidade": 2,
+    "meta_minutos": 120,
+    "titulo": "Corrida no seu ritmo"
+  },
+  {
+    "data_fim": "2026-11-19",
+    "data_inicio": "2026-11-09",
+    "id_desafio": 3,
+    "id_modalidade": 3,
+    "meta_minutos": 150,
+    "titulo": "Pedal da turma"
+  }
+]

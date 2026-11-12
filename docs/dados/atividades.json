@@ -1,0 +1,32 @@
+[
+  {
+    "data_atividade": "2026-11-11",
+    "duracao_minutos": 30,
+    "id_inscricao": 1,
+    "id_registro": 1
+  },
+  {
+    "data_atividade": "2026-11-12",
+    "duracao_minutos": 35,
+    "id_inscricao": 1,
+    "id_registro": 2
+  },
+  {
+    "data_atividade": "2026-11-12",
+    "duracao_minutos": 40,
+    "id_inscricao": 2,
+    "id_registro": 3
+  },
+  {
+    "data_atividade": "2026-11-11",
+    "duracao_minutos": 55,
+    "id_inscricao": 3,
+    "id_registro": 4
+  },
+  {
+    "data_atividade": "2026-11-12",
+    "duracao_minutos": 20,
+    "id_inscricao": 4,
+    "id_registro": 5
+  }
+]

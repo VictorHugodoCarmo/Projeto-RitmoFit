@@ -1,0 +1,22 @@
+[
+  {
+    "email": "ana@example.com",
+    "id_participante": 1,
+    "nome": "Ana Ribeiro"
+  },
+  {
+    "email": "bruno@example.com",
+    "id_participante": 2,
+    "nome": "Bruno Lima"
+  },
+  {
+    "email": "camila@example.com",
+    "id_participante": 3,
+    "nome": "Camila Santos"
+  },
+  {
+    "email": "diego@example.com",
+    "id_participante": 4,
+    "nome": "Diego Costa"
+  }
+]

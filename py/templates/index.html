@@ -1,0 +1,275 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Crie desafios de atividade física em grupo e acompanhe os minutos de cada participante.">
+  <meta name="theme-color" content="#0b0c15">
+  <title>RitmoFit | Desafios coletivos</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/estilo.css') }}">
+  <script src="{{ url_for('static', filename='js/ritmofit.js') }}" defer></script>
+</head>
+<body{% if modo_pages %} class="modo-pages"{% endif %}>
+  <a class="pular" href="#conteudo">Pular para o conteúdo</a>
+  <header class="topo">
+    <div class="limite topo-interno">
+      <a class="marca" href="#inicio" aria-label="RitmoFit, visão geral">
+        <span class="marca-simbolo" aria-hidden="true"></span>
+        <span>Ritmo<span class="marca-destaque">Fit</span></span>
+      </a>
+      <nav class="navegacao" aria-label="Navegação principal">
+        <a href="#inicio" data-tela="inicio" aria-current="page">Visão geral</a>
+        <a href="#desafios" data-tela="desafios">Desafios</a>
+        <a href="#participantes" data-tela="participantes">Participantes</a>
+        <a href="#inscricoes" data-tela="inscricoes">Inscrições</a>
+        <a href="#atividades" data-tela="atividades">Atividades</a>
+        <a href="#modalidades" data-tela="modalidades">Modalidades</a>
+      </nav>
+      <div class="topo-status">
+        {% if modo_pages %}
+        <span class="demo">Demonstração online</span>
+        {% elif modo_demo %}
+        <span class="demo">Demonstração</span>
+        {% endif %}
+        <span id="conexao" class="conexao" role="status">Conectando</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="limite principal" id="conteudo" tabindex="-1">
+    <div id="falha" class="aviso-rede" role="alert" hidden>
+      <p id="texto-falha"></p>
+      <button class="botao botao-secundario" id="recarregar" type="button">Tentar novamente</button>
+    </div>
+
+    <section id="tela-inicio" class="tela" aria-label="Visão geral">
+      <section class="capa" aria-labelledby="titulo-capa">
+        <img class="capa-foto" src="{{ url_for('static', filename='images/pista-ritmofit.webp') }}" alt="" fetchpriority="high" width="1536" height="1024">
+        <div class="capa-conteudo">
+          <p class="capa-categoria">Desafios coletivos de atividade física</p>
+          <h1 id="titulo-capa" tabindex="-1">Seu grupo em<br><em>movimento.</em></h1>
+          <p class="capa-texto">Combine uma meta, registre suas atividades e veja quanto falta para chegar lá.</p>
+          <div class="capa-acoes">
+            <a class="botao botao-primario" href="#desafios">Explorar desafios <span aria-hidden="true">↗</span></a>
+            {% if modo_pages %}
+            <a class="botao botao-secundario" href="#progresso">Ver progresso <span aria-hidden="true">↘</span></a>
+            {% else %}
+            <button class="botao botao-secundario" type="button" data-novo="atividades"><span aria-hidden="true">+</span> Registrar atividade</button>
+            {% endif %}
+          </div>
+          {% if modo_pages %}
+          <p class="capa-demonstracao">Dados fictícios. Os cadastros funcionam na versão Flask.</p>
+          {% endif %}
+        </div>
+      </section>
+
+      <dl class="metricas" aria-label="Resumo do RitmoFit">
+        <div class="metrica"><dt>Desafios ativos</dt><dd id="metrica-desafios">—</dd></div>
+        <div class="metrica"><dt>Participantes</dt><dd id="metrica-participantes">—</dd></div>
+        <div class="metrica"><dt>Atividades registradas</dt><dd id="metrica-atividades">—</dd></div>
+        <div class="metrica"><dt>Minutos registrados</dt><dd id="metrica-minutos">—</dd></div>
+      </dl>
+
+      <div class="visao-geral">
+        <section class="painel" aria-labelledby="titulo-recentes">
+          <div class="painel-cabecalho">
+            <h2 id="titulo-recentes">Desafios recentes</h2>
+            <a class="atalho" href="#desafios">Ver todos <span aria-hidden="true">↗</span></a>
+          </div>
+          <ul class="resumo-lista" id="desafios-recentes">
+            <li class="lista-vazia">Carregando desafios…</li>
+          </ul>
+        </section>
+
+        <section class="painel painel-progresso" id="progresso" aria-labelledby="titulo-progresso">
+          <div class="painel-cabecalho">
+            <h2 id="titulo-progresso">Progresso da meta</h2>
+            <button id="registrar-progresso" class="botao botao-compacto" type="button" hidden>+ Atividade</button>
+          </div>
+          <label class="rotulo" for="selecao-progresso">Inscrição</label>
+          <select id="selecao-progresso" aria-describedby="mensagem-progresso" disabled>
+            <option value="">Selecione uma inscrição</option>
+          </select>
+          <div id="medidor" class="progresso-conteudo" hidden>
+            <div id="anel-progresso" class="anel" role="progressbar" aria-label="Porcentagem da meta" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+              <span id="percentual">0%</span>
+            </div>
+            <div>
+              <p class="progresso-total"><strong id="total-progresso">0</strong><span id="meta-progresso"></span></p>
+              <p class="progresso-legenda" id="resumo-progresso"></p>
+            </div>
+          </div>
+          <p id="mensagem-progresso" class="progresso-mensagem" role="status">Carregando inscrições…</p>
+        </section>
+      </div>
+    </section>
+
+    <section id="tela-desafios" class="tela" aria-labelledby="titulo-desafios" hidden>
+      <div class="pagina-cabecalho">
+        <div>
+          <h1 id="titulo-desafios" tabindex="-1">Desafios</h1>
+          <p>Defina a modalidade, o período e a meta em minutos de cada desafio.</p>
+        </div>
+        <button class="botao botao-primario" type="button" data-novo="desafios">+ Novo desafio</button>
+      </div>
+      <div class="filtros">
+        <p id="contagem-desafios" aria-live="polite"></p>
+        <div class="campo-filtro">
+          <label for="filtro-desafios">Período</label>
+          <select id="filtro-desafios">
+            <option value="todos">Todos</option>
+            <option value="ativo">Em andamento</option>
+            <option value="agendado">Agendados</option>
+            <option value="encerrado">Encerrados</option>
+          </select>
+        </div>
+      </div>
+      <div id="lista-desafios" class="grade-desafios"></div>
+    </section>
+
+    <section id="tela-participantes" class="tela" aria-labelledby="titulo-participantes" hidden>
+      <div class="pagina-cabecalho">
+        <div>
+          <h1 id="titulo-participantes" tabindex="-1">Participantes</h1>
+          <p>Cadastre as pessoas que vão participar dos desafios.</p>
+        </div>
+        <button class="botao botao-primario" type="button" data-novo="participantes">+ Novo participante</button>
+      </div>
+      <div class="tabela-painel">
+        <table>
+          <caption class="apenas-leitor">Participantes cadastrados</caption>
+          <thead><tr><th scope="col">Nome</th><th scope="col">E-mail</th><th scope="col">Inscrições</th><th scope="col">Ações</th></tr></thead>
+          <tbody id="lista-participantes"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="tela-inscricoes" class="tela" aria-labelledby="titulo-inscricoes" hidden>
+      <div class="pagina-cabecalho">
+        <div>
+          <h1 id="titulo-inscricoes" tabindex="-1">Inscrições</h1>
+          <p>Vincule os participantes aos desafios e consulte o progresso individual.</p>
+        </div>
+        <button class="botao botao-primario" type="button" data-novo="inscricoes">+ Nova inscrição</button>
+      </div>
+      <div class="tabela-painel com-progresso">
+        <table>
+          <caption class="apenas-leitor">Inscrições nos desafios</caption>
+          <thead><tr><th scope="col">Participante</th><th scope="col">Desafio</th><th scope="col">Data da inscrição</th><th scope="col">Ações</th></tr></thead>
+          <tbody id="lista-inscricoes"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="tela-atividades" class="tela" aria-labelledby="titulo-atividades" hidden>
+      <div class="pagina-cabecalho">
+        <div>
+          <h1 id="titulo-atividades" tabindex="-1">Atividades</h1>
+          <p>Registre os minutos de cada atividade durante o período do desafio.</p>
+        </div>
+        <button class="botao botao-primario" type="button" data-novo="atividades">+ Registrar atividade</button>
+      </div>
+      <div class="tabela-painel">
+        <table>
+          <caption class="apenas-leitor">Atividades registradas</caption>
+          <thead><tr><th scope="col">Participante</th><th scope="col">Desafio</th><th scope="col">Data</th><th scope="col">Duração</th><th scope="col">Ações</th></tr></thead>
+          <tbody id="lista-atividades"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="tela-modalidades" class="tela" aria-labelledby="titulo-modalidades" hidden>
+      <div class="pagina-cabecalho">
+        <div>
+          <h1 id="titulo-modalidades" tabindex="-1">Modalidades</h1>
+          <p>Organize os tipos de atividade disponíveis para criar desafios.</p>
+        </div>
+        <button class="botao botao-primario" type="button" data-novo="modalidades">+ Nova modalidade</button>
+      </div>
+      <div class="tabela-painel">
+        <table>
+          <caption class="apenas-leitor">Modalidades cadastradas</caption>
+          <thead><tr><th scope="col">Modalidade</th><th scope="col">Desafios vinculados</th><th scope="col">Ações</th></tr></thead>
+          <tbody id="lista-modalidades"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <noscript><p class="aviso-rede">Ative o JavaScript no navegador para usar os formulários e consultar os dados.</p></noscript>
+  </main>
+
+  <footer class="rodape limite">
+    <a class="marca marca-rodape" href="#inicio"><span class="marca-simbolo" aria-hidden="true"></span><span>Ritmo<span class="marca-destaque">Fit</span></span></a>
+    {% if modo_pages %}
+    <a class="atalho" href="https://github.com/VictorHugodoCarmo/Projeto-RitmoFit#executar">Código e instruções para executar <span aria-hidden="true">↗</span></a>
+    {% else %}
+    <span>Projeto Integrado <span aria-hidden="true">/</span> DWS, POO e Banco de Dados</span>
+    {% endif %}
+  </footer>
+
+  <dialog id="dialogo" class="janela" aria-labelledby="titulo-dialogo" aria-describedby="apoio-dialogo">
+    <div class="janela-cabecalho">
+      <div>
+        <h2 id="titulo-dialogo"></h2>
+        <p id="apoio-dialogo"></p>
+      </div>
+      <button class="fechar" type="button" data-fechar aria-label="Fechar">×</button>
+    </div>
+    <p id="erro-dialogo" class="mensagem-erro" role="alert" hidden></p>
+    <div id="campos-dialogo"></div>
+    <div class="janela-acoes">
+      <button type="button" class="botao botao-secundario" data-fechar>Cancelar</button>
+      <button type="submit" form="formulario-registro" id="salvar" class="botao botao-primario">Salvar</button>
+    </div>
+  </dialog>
+
+  <template id="campos-participantes">
+    <label for="participante-nome">Nome</label>
+    <input id="participante-nome" name="nome" type="text" placeholder="Ex. Ana Ribeiro" autocomplete="name" required maxlength="100">
+    <label for="participante-email">E-mail</label>
+    <input id="participante-email" name="email" type="email" placeholder="nome@exemplo.com" autocomplete="email" required maxlength="100">
+  </template>
+
+  <template id="campos-modalidades">
+    <label for="modalidade-nome">Nome da modalidade</label>
+    <input id="modalidade-nome" name="nome" type="text" placeholder="Ex. Caminhada" required maxlength="50">
+  </template>
+
+  <template id="campos-desafios">
+    <label for="desafio-titulo">Título</label>
+    <input id="desafio-titulo" name="titulo" type="text" placeholder="Ex. Caminhada da semana" required maxlength="100">
+    <label for="desafio-modalidade">Modalidade</label>
+    <select id="desafio-modalidade" name="id_modalidade" required></select>
+    <div class="campos-linha">
+      <div><label for="desafio-inicio">Data de início</label><input id="desafio-inicio" name="data_inicio" type="date" required></div>
+      <div><label for="desafio-fim">Data de fim</label><input id="desafio-fim" name="data_fim" type="date" required></div>
+    </div>
+    <label for="desafio-meta">Meta individual em minutos</label>
+    <input id="desafio-meta" name="meta_minutos" type="number" min="1" step="1" placeholder="90" required>
+  </template>
+
+  <template id="campos-inscricoes">
+    <label for="inscricao-participante">Participante</label>
+    <select id="inscricao-participante" name="id_participante" required></select>
+    <label for="inscricao-desafio">Desafio</label>
+    <select id="inscricao-desafio" name="id_desafio" required></select>
+    <label for="inscricao-data">Data da inscrição</label>
+    <input id="inscricao-data" name="data_inscricao" type="date" required>
+  </template>
+
+  <template id="campos-atividades">
+    <label for="atividade-inscricao">Inscrição</label>
+    <select id="atividade-inscricao" name="id_inscricao" required aria-describedby="periodo-atividade"></select>
+    <p id="periodo-atividade" class="ajuda-campo"></p>
+    <div class="campos-linha">
+      <div><label for="atividade-data">Data da atividade</label><input id="atividade-data" name="data_atividade" type="date" required></div>
+      <div><label for="atividade-duracao">Duração em minutos</label><input id="atividade-duracao" name="duracao_minutos" type="number" min="1" step="1" placeholder="30" required></div>
+    </div>
+  </template>
+
+  <div id="notificacao" class="notificacao" hidden>
+    <p id="texto-notificacao" role="status"></p>
+    <button type="button" class="fechar" id="fechar-notificacao" aria-label="Dispensar mensagem">×</button>
+  </div>
+</body>
+</html>
