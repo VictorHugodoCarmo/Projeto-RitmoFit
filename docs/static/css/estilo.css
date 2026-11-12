@@ -223,7 +223,6 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 
 .capa-texto { max-width: 360px; color: #d3d7f0; font-size: 14px; }
 .capa-demonstracao { margin-top: 9px; color: #c5c8e4; font-size: 11px; }
-.modo-pages [data-novo], .modo-pages .tabela-painel:not(.com-progresso) th:last-child { display: none; }
 .capa-acoes, .acoes-registro { display: flex; flex-wrap: wrap; gap: 8px; }
 .capa-acoes { margin-top: 22px; gap: 10px; }
 

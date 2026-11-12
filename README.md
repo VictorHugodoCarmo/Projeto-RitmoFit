@@ -42,7 +42,7 @@ Para testar o fluxo com cadastros próprios, crie uma modalidade e um participan
 
 ## GitHub Pages
 
-A [demonstração online](https://victorhugodocarmo.github.io/Projeto-RitmoFit/) carrega arquivos JSON com dados fictícios via Fetch. É possível navegar pelas listas, filtrar desafios e escolher uma inscrição para consultar seu progresso. Os formulários de cadastro, edição e exclusão usam Flask e SQLite na execução local.
+A demonstração online permite cadastrar, editar e excluir registros, filtrar desafios e consultar o progresso. Na primeira visita, carrega exemplos em JSON via Fetch. Os cadastros ficam no navegador em que foram feitos, inclusive depois de recarregar a página. A execução local usa as rotas Flask e guarda os dados no SQLite. [Abrir a demonstração](https://victorhugodocarmo.github.io/Projeto-RitmoFit/)
 
 No GitHub, abra **Settings → Pages**. Em **Source**, escolha **Deploy from a branch** e selecione **main** e **/docs**. O arquivo inicial da publicação fica em `docs/index.html`.
 
@@ -55,6 +55,7 @@ Para atualizar a versão online depois de alterar a interface, execute `python .
 | [py/templates/index.html](py/templates/index.html) | Painel, listas e formulários em HTML |
 | [py/static/css/estilo.css](py/static/css/estilo.css) | Layout responsivo e identidade visual |
 | [py/static/js/ritmofit.js](py/static/js/ritmofit.js) | Envio de formulários, Fetch e atualização das listas |
+| [py/static/js/pages.js](py/static/js/pages.js) | Armazenamento e validações da demonstração no navegador |
 | [py/app.py](py/app.py) | Página inicial e rotas Flask que recebem e devolvem JSON |
 | [py/models.py](py/models.py) | Classes do RitmoFit e cálculo de progresso |
 | [py/dao.py](py/dao.py) | Operações no SQLite |

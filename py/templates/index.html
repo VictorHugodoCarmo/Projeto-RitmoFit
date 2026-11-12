@@ -7,6 +7,9 @@
   <meta name="theme-color" content="#0b0c15">
   <title>RitmoFit | Desafios coletivos</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/estilo.css') }}">
+  {% if modo_pages %}
+  <script src="{{ url_for('static', filename='js/pages.js') }}" defer></script>
+  {% endif %}
   <script src="{{ url_for('static', filename='js/ritmofit.js') }}" defer></script>
 </head>
 <body{% if modo_pages %} class="modo-pages"{% endif %}>
@@ -51,14 +54,10 @@
           <p class="capa-texto">Combine uma meta, registre suas atividades e veja quanto falta para chegar lá.</p>
           <div class="capa-acoes">
             <a class="botao botao-primario" href="#desafios">Explorar desafios <span aria-hidden="true">↗</span></a>
-            {% if modo_pages %}
-            <a class="botao botao-secundario" href="#progresso">Ver progresso <span aria-hidden="true">↘</span></a>
-            {% else %}
             <button class="botao botao-secundario" type="button" data-novo="atividades"><span aria-hidden="true">+</span> Registrar atividade</button>
-            {% endif %}
           </div>
           {% if modo_pages %}
-          <p class="capa-demonstracao">Dados fictícios. Os cadastros funcionam na versão Flask.</p>
+          <p class="capa-demonstracao">Os cadastros ficam salvos neste navegador.</p>
           {% endif %}
         </div>
       </section>
@@ -152,7 +151,7 @@
         </div>
         <button class="botao botao-primario" type="button" data-novo="inscricoes">+ Nova inscrição</button>
       </div>
-      <div class="tabela-painel com-progresso">
+      <div class="tabela-painel">
         <table>
           <caption class="apenas-leitor">Inscrições nos desafios</caption>
           <thead><tr><th scope="col">Participante</th><th scope="col">Desafio</th><th scope="col">Data da inscrição</th><th scope="col">Ações</th></tr></thead>

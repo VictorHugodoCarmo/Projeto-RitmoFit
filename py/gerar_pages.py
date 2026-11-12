@@ -1,4 +1,5 @@
 import json
+from hashlib import sha256
 from pathlib import Path
 from shutil import copytree
 from tempfile import TemporaryDirectory
@@ -17,7 +18,9 @@ def gerar_pages():
     def url_estatica(endpoint, filename):
         if endpoint != "static":
             raise ValueError("A publicação do Pages usa apenas arquivos estáticos.")
-        return "./static/" + filename
+        conteudo = (destino / "static" / filename).read_bytes()
+        versao = sha256(conteudo).hexdigest()[:12]
+        return f"./static/{filename}?v={versao}"
 
     with sistema.app.app_context():
         modelo = sistema.app.jinja_env.get_template("index.html")
@@ -40,9 +43,6 @@ def gerar_pages():
                 dao.caminho_banco = banco
             with sistema.app.test_client() as cliente:
                 rotas = ["participantes", "modalidades", "desafios", "inscricoes", "atividades"]
-                inscricoes = cliente.get("/inscricoes").get_json()
-                for inscricao in inscricoes:
-                    rotas.append(f"inscricoes/{inscricao['id_inscricao']}/progresso")
                 for rota in rotas:
                     resposta = cliente.get("/" + rota)
                     if resposta.status_code != 200:

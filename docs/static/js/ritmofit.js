@@ -27,7 +27,7 @@ const filtroDesafios = document.querySelector("#filtro-desafios");
 const salvar = document.querySelector("#salvar");
 
 async function solicitar(caminho, metodo = "GET", dados = null) {
-  const endereco = modoPages ? "./dados" + caminho + ".json" : API_URL + caminho;
+  if (modoPages) return solicitarPages(caminho, metodo, dados);
   const opcoes = { method: metodo };
   if (dados !== null) {
     opcoes.headers = { "Content-Type": "application/json" };
@@ -36,9 +36,8 @@ async function solicitar(caminho, metodo = "GET", dados = null) {
 
   let resposta;
   try {
-    resposta = await fetch(endereco, opcoes);
+    resposta = await fetch(API_URL + caminho, opcoes);
   } catch (erro) {
-    if (modoPages) throw new Error("Falha ao carregar os dados de demonstração. Tente novamente.");
     throw new Error("Falha na conexão. Confira se o RitmoFit está rodando e tente novamente.");
   }
 
@@ -185,7 +184,7 @@ async function carregarDados(preferenciaProgresso) {
     renderizarVisaoGeral(preferenciaProgresso);
     renderizarDesafios();
     renderizarTabelas();
-    atualizarConexao(modoPages ? "Dados de exemplo" : "Conectado");
+    atualizarConexao(modoPages ? "Dados locais" : "Conectado");
   } catch (erro) {
     atualizarConexao("Erro ao carregar", erro.message);
   } finally {
@@ -244,7 +243,7 @@ async function atualizarProgresso() {
   const id = Number(selecaoProgresso.value);
   const medidor = document.querySelector("#medidor");
   const mensagem = document.querySelector("#mensagem-progresso");
-  document.querySelector("#registrar-progresso").hidden = !id || modoPages;
+  document.querySelector("#registrar-progresso").hidden = !id;
   medidor.hidden = true;
   mensagem.hidden = false;
 
@@ -289,7 +288,6 @@ function verProgresso(id) {
 
 function acoesRegistro(tipo, registro) {
   const acoes = criarElemento("div", "acoes-registro");
-  if (modoPages) return acoes;
   acoes.append(
     criarBotao("Editar", () => abrirFormulario(tipo, registro)),
     criarBotao("Excluir", () => abrirExclusao(tipo, registro), "botao-excluir")
@@ -319,17 +317,15 @@ function renderizarDesafios() {
     topo.append(criarElemento("span", "", nomeModalidade(desafio.id_modalidade)), seloPeriodo(desafio, hoje));
     const meta = criarElemento("p", "cartao-meta", numero(desafio.meta_minutos) + " ");
     meta.append(criarElemento("small", "", "min por pessoa"));
+    const acoes = acoesRegistro("desafios", desafio);
+    acoes.prepend(criarBotao("Inscrever", () => abrirFormulario("inscricoes", null, { id_desafio: desafio.id_desafio }), "botao-primario"));
     cartao.append(
       topo,
       criarElemento("h2", "", desafio.titulo),
       criarElemento("p", "cartao-periodo", periodo(desafio)),
-      meta
+      meta,
+      acoes
     );
-    if (!modoPages) {
-      const acoes = acoesRegistro("desafios", desafio);
-      acoes.prepend(criarBotao("Inscrever", () => abrirFormulario("inscricoes", null, { id_desafio: desafio.id_desafio }), "botao-primario"));
-      cartao.append(acoes);
-    }
     lista.append(cartao);
   });
 }
@@ -354,15 +350,13 @@ function renderizarTabela(tipo, colunas, montarLinha, textoVazio) {
       celula.dataset.rotulo = cabecalhos[indice].textContent;
       linha.append(celula);
     });
-    if (!modoPages || tipo === "inscricoes") {
-      const acoes = acoesRegistro(tipo, registro);
-      if (tipo === "inscricoes") {
-        acoes.prepend(criarBotao("Ver progresso", () => verProgresso(registro.id_inscricao)));
-      }
-      const ultima = criarElemento("td");
-      ultima.append(acoes);
-      linha.append(ultima);
+    const acoes = acoesRegistro(tipo, registro);
+    if (tipo === "inscricoes") {
+      acoes.prepend(criarBotao("Ver progresso", () => verProgresso(registro.id_inscricao)));
     }
+    const ultima = criarElemento("td");
+    ultima.append(acoes);
+    linha.append(ultima);
     lista.append(linha);
   });
 }
@@ -542,7 +536,9 @@ function abrirExclusao(tipo, registro) {
   const config = colecoes[tipo];
   const formulario = prepararFormulario(
     "Excluir " + config.nome + "?",
-    "O registro será removido do banco. Confirme para continuar.",
+    modoPages
+      ? "O registro será removido dos dados deste navegador."
+      : "O registro será removido do banco. Confirme para continuar.",
     "Excluir",
     true
   );
