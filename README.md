@@ -25,17 +25,17 @@ O esquema SQLite contém cinco tabelas e quatro chaves estrangeiras. Cada partic
 
 ## Back-end da Etapa 2
 
-- [models.py](models.py) reúne as classes do RitmoFit e o cálculo do progresso.
-- [dao.py](dao.py) usa SQLite para cadastrar registros e recuperar os dados.
-- [app.py](app.py) recebe as requisições HTTP e devolve as respostas em JSON.
+- [models.py](py/models.py) reúne as classes do RitmoFit e o cálculo do progresso.
+- [dao.py](py/dao.py) usa SQLite para cadastrar registros e recuperar os dados.
+- [app.py](py/app.py) recebe as requisições HTTP e devolve as respostas em JSON.
 
 ### Executar
 
 Use Python 3.12 ou superior com SQLite 3.37 ou superior. Execute estes comandos na raiz do projeto.
 
 ```powershell
-python -m pip install -r requirements.txt
-python app.py
+python -m pip install -r .\py\requirements.txt
+python .\py\app.py
 ```
 
 Na primeira execução, o programa usa o SQL da Etapa 1 para criar `ritmofit.db`. Abra [http://127.0.0.1:5000](http://127.0.0.1:5000/) para verificar se a API está em execução.
