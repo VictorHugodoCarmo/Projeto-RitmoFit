@@ -10,17 +10,17 @@ from demonstracao import preparar_demonstracao
 
 
 def gerar_pages():
-    destino = sistema.RAIZ_PROJETO / "docs"
-    destino.mkdir(exist_ok=True)
-    copytree(Path(sistema.app.static_folder), destino / "static", dirs_exist_ok=True)
+    destino = sistema.RAIZ_PROJETO
+    pasta_estatica = destino / "docs" / "static"
+    copytree(Path(sistema.app.static_folder), pasta_estatica, dirs_exist_ok=True)
     (destino / ".nojekyll").touch()
 
     def url_estatica(endpoint, filename):
         if endpoint != "static":
             raise ValueError("A publicação do Pages usa apenas arquivos estáticos.")
-        conteudo = (destino / "static" / filename).read_bytes()
+        conteudo = (pasta_estatica / filename).read_bytes()
         versao = sha256(conteudo).hexdigest()[:12]
-        return f"./static/{filename}?v={versao}"
+        return f"./docs/static/{filename}?v={versao}"
 
     with sistema.app.app_context():
         modelo = sistema.app.jinja_env.get_template("index.html")
@@ -55,7 +55,7 @@ def gerar_pages():
             for dao, caminho in zip(daos, caminhos):
                 dao.caminho_banco = caminho
 
-    print("Demonstração pronta em docs/index.html.")
+    print("Demonstração pronta em index.html na raiz do projeto.")
 
 
 if __name__ == "__main__":
