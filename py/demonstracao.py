@@ -3,8 +3,8 @@ from datetime import date, timedelta
 from dao import abrir_conexao
 
 
-def preparar_demonstracao(caminho_banco):
-    hoje = date.today()
+def preparar_demonstracao(caminho_banco, hoje=None):
+    hoje = hoje or date.today()
     inicio = (hoje - timedelta(days=3)).isoformat()
     ontem = (hoje - timedelta(days=1)).isoformat()
     fim = (hoje + timedelta(days=7)).isoformat()

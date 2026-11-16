@@ -42,7 +42,7 @@ Para testar o fluxo com cadastros próprios, crie uma modalidade e um participan
 
 ## GitHub Pages
 
-A demonstração online permite cadastrar, editar e excluir registros, filtrar desafios e consultar o progresso. Na primeira visita, carrega exemplos em JSON via Fetch. Os cadastros ficam no navegador em que foram feitos, inclusive depois de recarregar a página. A execução local usa as rotas Flask e guarda os dados no SQLite. [Abrir a demonstração](https://victorhugodocarmo.github.io/Projeto-RitmoFit/)
+A demonstração online permite cadastrar, editar e excluir registros, filtrar desafios e consultar o progresso. Na primeira visita, carrega exemplos em JSON via Fetch. Os desafios de exemplo intactos acompanham a data da visita. Ao editar um desafio de exemplo ou mudar seus registros, as datas dele ficam fixas. Os cadastros existentes são preservados na migração para a versão nova do armazenamento e ficam no navegador em que foram feitos. A execução local usa as rotas Flask e guarda os dados no SQLite. [Abrir a demonstração](https://victorhugodocarmo.github.io/Projeto-RitmoFit/)
 
 No GitHub, abra **Settings → Pages**. Em **Source**, escolha **Deploy from a branch** e selecione a branch **main** e a pasta **/ (root)**. O GitHub Pages abre o `index.html` na raiz.
 

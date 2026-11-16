@@ -1,4 +1,5 @@
-const CHAVE_PAGES = "Projeto-RitmoFit:demonstracao:v1";
+const CHAVE_PAGES = "Projeto-RitmoFit:demonstracao:v2";
+const CHAVE_PAGES_ANTERIOR = "Projeto-RitmoFit:demonstracao:v1";
 
 const vinculosPages = {
   participantes: ["inscricoes", "id_participante", "Exclua as inscrições deste participante primeiro."],
@@ -7,9 +8,9 @@ const vinculosPages = {
   inscricoes: ["atividades", "id_inscricao", "Exclua as atividades desta inscrição primeiro."],
 };
 
-function lerBancoPages() {
+function lerBancoPages(chave = CHAVE_PAGES) {
   try {
-    return JSON.parse(localStorage.getItem(CHAVE_PAGES));
+    return JSON.parse(localStorage.getItem(chave));
   } catch {
     throw new Error("Não foi possível ler os cadastros neste navegador.");
   }
@@ -23,8 +24,44 @@ function salvarBancoPages(banco) {
   }
 }
 
+function dataUTC(data) {
+  return new Date(data + "T00:00:00Z");
+}
+
+function registrosDoDesafioPages(listas, idDesafio) {
+  const desafio = listas.desafios.find((item) => item.id_desafio === idDesafio);
+  const inscricoes = listas.inscricoes.filter((item) => item.id_desafio === idDesafio);
+  const idsInscricoes = new Set(inscricoes.map((item) => item.id_inscricao));
+  const atividades = listas.atividades.filter((item) => idsInscricoes.has(item.id_inscricao));
+  return { desafio, inscricoes, atividades };
+}
+
+function ajustarDatasExemplosPages(banco, hoje) {
+  const exemplos = banco.exemplos;
+  if (exemplos.data === hoje || !exemplos.desafios.length) return false;
+
+  const diferenca = dataUTC(hoje) - dataUTC(exemplos.data);
+  function deslocar(data) {
+    return new Date(dataUTC(data).getTime() + diferenca).toISOString().slice(0, 10);
+  }
+
+  for (const idDesafio of exemplos.desafios) {
+    const { desafio, inscricoes, atividades } = registrosDoDesafioPages(banco.listas, idDesafio);
+    desafio.data_inicio = deslocar(desafio.data_inicio);
+    desafio.data_fim = deslocar(desafio.data_fim);
+    for (const inscricao of inscricoes) inscricao.data_inscricao = deslocar(inscricao.data_inscricao);
+    for (const atividade of atividades) atividade.data_atividade = deslocar(atividade.data_atividade);
+  }
+  exemplos.data = hoje;
+  return true;
+}
+
 async function iniciarBancoPages() {
-  if (lerBancoPages()) return;
+  const atual = lerBancoPages();
+  if (atual) {
+    if (ajustarDatasExemplosPages(atual, dataDeHoje())) salvarBancoPages(atual);
+    return;
+  }
   const banco = { listas: {}, ultimosIds: {} };
 
   for (const tipo of Object.keys(colecoes)) {
@@ -36,7 +73,32 @@ async function iniciarBancoPages() {
     banco.ultimosIds[tipo] = lista.reduce((maior, item) => Math.max(maior, item[chave]), 0);
   }
 
-  if (!lerBancoPages()) salvarBancoPages(banco);
+  if (lerBancoPages()) return;
+
+  const anterior = lerBancoPages(CHAVE_PAGES_ANTERIOR);
+  const destino = anterior || banco;
+  // Um desafio editado ou com novos registros conserva todas as suas datas.
+  const desafios = banco.listas.desafios.map((item) => item.id_desafio).filter((id) =>
+    JSON.stringify(registrosDoDesafioPages(destino.listas, id))
+    === JSON.stringify(registrosDoDesafioPages(banco.listas, id))
+  );
+  const data = banco.listas.atividades.reduce((ultima, item) =>
+    item.data_atividade > ultima ? item.data_atividade : ultima, ""
+  );
+  destino.exemplos = { data, desafios };
+  ajustarDatasExemplosPages(destino, dataDeHoje());
+  salvarBancoPages(destino);
+}
+
+function fixarDatasPages(banco, tipo, registro) {
+  if (!registro) return;
+  let idDesafio = registro.id_desafio;
+  if (tipo === "atividades") {
+    const inscricao = banco.listas.inscricoes.find((item) => item.id_inscricao === registro.id_inscricao);
+    idDesafio = inscricao.id_desafio;
+  }
+  if (idDesafio === undefined) return;
+  banco.exemplos.desafios = banco.exemplos.desafios.filter((id) => id !== idDesafio);
 }
 
 function buscarNoBancoPages(listas, tipo, id, erro) {
@@ -131,12 +193,15 @@ async function solicitarPages(caminho, metodo, dados) {
     if (vinculo && banco.listas[vinculo[0]].some((item) => item[vinculo[1]] === id)) {
       throw new Error(vinculo[2]);
     }
+    fixarDatasPages(banco, tipo, lista[posicao]);
     lista.splice(posicao, 1);
     salvarBancoPages(banco);
     return { mensagem: "Registro excluído." };
   }
 
   validarRegistroPages(banco.listas, tipo, dados, lista[posicao]);
+  fixarDatasPages(banco, tipo, lista[posicao]);
+  fixarDatasPages(banco, tipo, dados);
   if (metodo === "POST") {
     const novoId = banco.ultimosIds[tipo] + 1;
     banco.ultimosIds[tipo] = novoId;

@@ -1,4 +1,5 @@
 import json
+from datetime import date
 from hashlib import sha256
 from pathlib import Path
 from shutil import copytree
@@ -7,6 +8,10 @@ from tempfile import TemporaryDirectory
 import app as sistema
 from dao import preparar_banco
 from demonstracao import preparar_demonstracao
+
+
+# Mantém a referência dos JSON estável. O navegador ajusta as datas pela visita.
+DATA_BASE_PAGES = date(2026, 11, 12)
 
 
 def gerar_pages():
@@ -18,7 +23,10 @@ def gerar_pages():
     def url_estatica(endpoint, filename):
         if endpoint != "static":
             raise ValueError("A publicação do Pages usa apenas arquivos estáticos.")
-        conteudo = (pasta_estatica / filename).read_bytes()
+        arquivo = pasta_estatica / filename
+        conteudo = arquivo.read_bytes()
+        if arquivo.suffix in (".css", ".js"):
+            conteudo = conteudo.replace(b"\r\n", b"\n")
         versao = sha256(conteudo).hexdigest()[:12]
         return f"./docs/static/{filename}?v={versao}"
 
@@ -32,7 +40,7 @@ def gerar_pages():
     with TemporaryDirectory() as pasta:
         banco = Path(pasta) / "pages.db"
         preparar_banco(banco)
-        preparar_demonstracao(banco)
+        preparar_demonstracao(banco, DATA_BASE_PAGES)
         daos = (
             sistema.participante_dao, sistema.modalidade_dao, sistema.desafio_dao,
             sistema.inscricao_dao, sistema.registro_dao,
