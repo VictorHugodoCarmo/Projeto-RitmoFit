@@ -29,16 +29,25 @@ O Flask e a versão online aceitam até 1.440 minutos por atividade, 100.000 min
 
 Use Python 3.12 ou superior com SQLite 3.37 ou superior. Na raiz do projeto, instale o Flask e inicie o servidor.
 
+**Windows (PowerShell)**
+
 ```powershell
 python -m pip install -r .\py\requirements.txt
 python .\py\app.py
 ```
 
-Abra [o RitmoFit no navegador](http://127.0.0.1:5000/). Na primeira execução, o Flask usa o SQL da Etapa 1 para criar `ritmofit.db`.
+**Linux e macOS**
+
+```bash
+python3 -m pip install -r py/requirements.txt
+python3 py/app.py
+```
+
+Na primeira execução, o Flask cria `ritmofit.db` com o script de criação do banco `banco/ritmofit.sql`. [Abrir o RitmoFit local](http://127.0.0.1:5000/)
 
 ## Apresentação
 
-Para iniciar com dados fictícios, rode `python .\py\app.py --demo`. O modo de demonstração usa `ritmofit-demo.db` e salva as alterações nesse arquivo. Na primeira execução, a inscrição de Ana Ribeiro na Caminhada da semana mostra **65 de 90 minutos**. Registre mais **25 minutos** nessa inscrição para ver **Meta atingida**. Reabra a página para conferir que o registro foi salvo.
+Para iniciar com dados fictícios, rode `python .\py\app.py --demo` no Windows ou `python3 py/app.py --demo` no Linux e no macOS. O modo de demonstração usa `ritmofit-demo.db` e salva as alterações nesse arquivo. Na primeira execução, a inscrição de Ana Ribeiro na Caminhada da semana mostra **65 de 90 minutos**. Registre mais **25 minutos** nessa inscrição para ver **Meta atingida**. Reabra a página para conferir que o registro foi salvo.
 
 Para testar o fluxo com cadastros próprios, crie uma modalidade e um participante. Em **Desafios**, crie um desafio, clique em **Inscrever** e selecione a pessoa. Registre uma atividade dentro do período. Use **Ver progresso** na lista de inscrições para consultar o total e os minutos restantes.
 
@@ -48,7 +57,7 @@ A demonstração online permite cadastrar, editar e excluir registros, filtrar d
 
 No GitHub, abra **Settings → Pages**. Em **Source**, escolha **Deploy from a branch** e selecione a branch **main** e a pasta **/ (root)**. O GitHub Pages abre o `index.html` na raiz.
 
-Para atualizar a versão online depois de alterar a interface, execute `python .\py\gerar_pages.py` e inclua no commit o `index.html` e os arquivos atualizados de `dados/` e `docs/static/`.
+Para atualizar a versão online depois de alterar a interface, execute `python .\py\gerar_pages.py` no Windows ou `python3 py/gerar_pages.py` no Linux e no macOS. Inclua no commit o `index.html` e os arquivos atualizados de `dados/` e `docs/static/`.
 
 ## Organização
 

@@ -38,9 +38,20 @@ duracao_minutos INTEGER NOT NULL CHECK (duracao_minutos > 0),
 FOREIGN KEY (id_inscricao) REFERENCES inscricao (id_inscricao)
 );
 
--- Trigger simples para validar a data ao inserir a atividade
+-- Valida a data ao inserir a atividade.
 CREATE TRIGGER IF NOT EXISTS validar_data_atividade
 BEFORE INSERT ON registro_atividade
+BEGIN
+SELECT RAISE(ABORT, 'A atividade deve ocorrer dentro do período do desafio.')
+FROM inscricao AS i
+JOIN desafio AS d ON d.id_desafio = i.id_desafio
+WHERE i.id_inscricao = NEW.id_inscricao
+AND (NEW.data_atividade < d.data_inicio OR NEW.data_atividade > d.data_fim);
+END;
+
+-- Valida a data e a inscrição ao alterar a atividade.
+CREATE TRIGGER IF NOT EXISTS validar_data_atividade_update
+BEFORE UPDATE ON registro_atividade
 BEGIN
 SELECT RAISE(ABORT, 'A atividade deve ocorrer dentro do período do desafio.')
 FROM inscricao AS i
