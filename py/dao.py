@@ -25,16 +25,45 @@ def preparar_banco(caminho_banco=CAMINHO_BANCO):
                            'inscricao', 'registro_atividade')
             """
         ).fetchall()
-        if len(tabelas) == 5:
-            return
-        if tabelas:
+        if tabelas and len(tabelas) != 5:
             raise ValueError("O banco do RitmoFit está incompleto. Confira o arquivo ritmofit.db.")
 
         with open(RAIZ_PROJETO / "banco" / "ritmofit.sql", encoding="utf-8-sig") as arquivo:
             esquema = arquivo.read()
-        conexao.executescript(esquema)
+        try:
+            conexao.executescript("BEGIN IMMEDIATE;\n" + esquema)
+        except sqlite3.IntegrityError as erro:
+            if not tabelas or erro.sqlite_errorcode != sqlite3.SQLITE_CONSTRAINT_UNIQUE:
+                raise
+            # Preserva duplicatas antigas e impede novos conflitos até que elas sejam corrigidas.
+            proteger_emails_legados(conexao)
+        conexao.commit()
     finally:
         conexao.close()
+
+
+def proteger_emails_legados(conexao):
+    conexao.execute("""
+        CREATE TRIGGER IF NOT EXISTS validar_email_participante_insert
+        BEFORE INSERT ON participante
+        WHEN EXISTS (
+            SELECT 1 FROM participante WHERE lower(trim(email)) = lower(trim(NEW.email))
+        )
+        BEGIN
+            SELECT RAISE(ABORT, 'Já existe um participante com esse e-mail.');
+        END;
+    """)
+    conexao.execute("""
+        CREATE TRIGGER IF NOT EXISTS validar_email_participante_update
+        BEFORE UPDATE OF email ON participante
+        WHEN EXISTS (
+            SELECT 1 FROM participante WHERE lower(trim(email)) = lower(trim(NEW.email))
+            AND id_participante != OLD.id_participante
+        )
+        BEGIN
+            SELECT RAISE(ABORT, 'Já existe um participante com esse e-mail.');
+        END;
+    """)
 
 
 def consultar(caminho_banco, comando, parametros=()):

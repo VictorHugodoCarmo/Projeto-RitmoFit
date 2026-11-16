@@ -14,7 +14,9 @@ O RitmoFit organiza desafios coletivos de atividade física com metas individuai
 | Inscrição | Vincula um participante a um desafio e registra a data de adesão. |
 | Registro de atividade | Guarda a data e a duração de uma atividade vinculada à inscrição. |
 
-O esquema SQLite contém cinco tabelas e quatro chaves estrangeiras. Cada participante pode se inscrever uma vez por desafio. A API valida a duração das atividades e o período em que foram realizadas.
+O esquema SQLite contém cinco tabelas e quatro chaves estrangeiras. Cada participante pode se inscrever uma vez por desafio.
+
+O Flask e a versão online aceitam até 1.440 minutos por atividade, 100.000 minutos por meta e 366 dias por desafio, contando o início e o fim. A data da inscrição pode ser hoje ou uma data anterior, inclusive antes do início do desafio. O e-mail é salvo em minúsculas, sem espaços nas extremidades, e deve ser único.
 
 ## Modelagem
 

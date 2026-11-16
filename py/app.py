@@ -1,5 +1,7 @@
+import re
 import sqlite3
 import sys
+from datetime import date
 
 from flask import Flask, jsonify, render_template, request
 
@@ -28,6 +30,15 @@ inscricao_dao = InscricaoDAO(BANCO)
 registro_dao = RegistroAtividadeDAO(BANCO)
 
 LIMITE_INTEIRO_SQLITE = 9223372036854775807
+LIMITE_EMAIL = 100
+LIMITE_DURACAO_ATIVIDADE = 1_440
+LIMITE_META_DESAFIO = 100_000
+LIMITE_DIAS_DESAFIO = 366
+FORMATO_EMAIL = re.compile(
+    r"(?=[^@]{1,64}@)[a-z0-9!#$%&'*+/=?^_\x60{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_\x60{|}~-]+)*"
+    r"@(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z][a-z0-9-]{0,61}[a-z0-9]",
+    re.ASCII | re.IGNORECASE,
+)
 
 
 def ler_dados():
@@ -47,16 +58,19 @@ def ler_texto(dados, campo, limite=None):
     return valor
 
 
-def ler_inteiro(dados, campo):
+def ler_inteiro(dados, campo, limite=LIMITE_INTEIRO_SQLITE, erro_limite=None):
     valor = dados.get(campo)
-    if type(valor) != int or not 1 <= valor <= LIMITE_INTEIRO_SQLITE:
-        raise ValueError(f"Informe um número inteiro positivo no campo {campo}.")
+    mensagem = f"Informe um número inteiro positivo no campo {campo}."
+    if type(valor) != int or valor < 1:
+        raise ValueError(mensagem)
+    if valor > limite:
+        raise ValueError(erro_limite or mensagem)
     return valor
 
 
 def ler_data(dados, campo):
     valor = ler_texto(dados, campo)
-    if not data_valida(valor, BANCO):
+    if valor.startswith("0000-") or not data_valida(valor, BANCO):
         raise ValueError(f"Informe uma data válida no formato AAAA-MM-DD em {campo}.")
     return valor
 
@@ -98,7 +112,10 @@ def cadastrar_participante(id_participante=None):
     try:
         dados = ler_dados()
         nome = ler_texto(dados, "nome", 100)
-        email = ler_texto(dados, "email", 100)
+        email = ler_texto(dados, "email", LIMITE_EMAIL)
+        if not FORMATO_EMAIL.fullmatch(email):
+            raise ValueError("Informe um e-mail válido.")
+        email = email.lower()
         participante = Participante(id_participante, nome, email)
         if id_participante is not None:
             if not id_valido(id_participante) or not participante_dao.atualizar(id_participante, participante):
@@ -161,10 +178,16 @@ def cadastrar_desafio(id_desafio=None):
         titulo = ler_texto(dados, "titulo", 100)
         data_inicio = ler_data(dados, "data_inicio")
         data_fim = ler_data(dados, "data_fim")
-        meta_minutos = ler_inteiro(dados, "meta_minutos")
+        meta_minutos = ler_inteiro(
+            dados, "meta_minutos", LIMITE_META_DESAFIO,
+            f"A meta do desafio deve ser de até {LIMITE_META_DESAFIO} minutos.",
+        )
 
         if data_fim < data_inicio:
             raise ValueError("A data de fim deve ser igual ou posterior à data de início.")
+        dias = (date.fromisoformat(data_fim) - date.fromisoformat(data_inicio)).days + 1
+        if dias > LIMITE_DIAS_DESAFIO:
+            raise ValueError(f"O período do desafio deve ser de até {LIMITE_DIAS_DESAFIO} dias.")
         if modalidade_dao.buscar_por_id(id_modalidade) is None:
             return jsonify({"erro": "Modalidade não encontrada."}), 404
 
@@ -203,6 +226,8 @@ def cadastrar_inscricao(id_inscricao=None):
         id_desafio = ler_inteiro(dados, "id_desafio")
         data_inscricao = ler_data(dados, "data_inscricao")
 
+        if data_inscricao > date.today().isoformat():
+            raise ValueError("A data da inscrição deve ser igual ou anterior a hoje.")
         if participante_dao.buscar_por_id(id_participante) is None:
             return jsonify({"erro": "Participante não encontrado."}), 404
         if desafio_dao.buscar_por_id(id_desafio) is None:
@@ -241,7 +266,10 @@ def cadastrar_atividade(id_registro=None):
         dados = ler_dados()
         id_inscricao = ler_inteiro(dados, "id_inscricao")
         data_atividade = ler_data(dados, "data_atividade")
-        duracao_minutos = ler_inteiro(dados, "duracao_minutos")
+        duracao_minutos = ler_inteiro(
+            dados, "duracao_minutos", LIMITE_DURACAO_ATIVIDADE,
+            f"A duração da atividade deve ser de até {LIMITE_DURACAO_ATIVIDADE} minutos.",
+        )
 
         inscricao = inscricao_dao.buscar_por_id(id_inscricao)
         if inscricao is None:

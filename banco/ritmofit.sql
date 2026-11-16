@@ -1,15 +1,15 @@
-CREATE TABLE participante (
+CREATE TABLE IF NOT EXISTS participante (
 id_participante INTEGER PRIMARY KEY AUTOINCREMENT,
 nome VARCHAR(100) NOT NULL,
-email VARCHAR(100) NOT NULL UNIQUE
+email VARCHAR(100) NOT NULL
 );
 
-CREATE TABLE modalidade (
+CREATE TABLE IF NOT EXISTS modalidade (
 id_modalidade INTEGER PRIMARY KEY AUTOINCREMENT,
 nome VARCHAR(50) NOT NULL UNIQUE
 );
 
-CREATE TABLE desafio (
+CREATE TABLE IF NOT EXISTS desafio (
 id_desafio INTEGER PRIMARY KEY AUTOINCREMENT,
 id_modalidade INTEGER NOT NULL,
 titulo VARCHAR(100) NOT NULL,
@@ -20,7 +20,7 @@ CHECK (data_fim >= data_inicio),
 FOREIGN KEY (id_modalidade) REFERENCES modalidade (id_modalidade)
 );
 
-CREATE TABLE inscricao (
+CREATE TABLE IF NOT EXISTS inscricao (
 id_inscricao INTEGER PRIMARY KEY AUTOINCREMENT,
 id_participante INTEGER NOT NULL,
 id_desafio INTEGER NOT NULL,
@@ -30,7 +30,7 @@ FOREIGN KEY (id_participante) REFERENCES participante (id_participante),
 FOREIGN KEY (id_desafio) REFERENCES desafio (id_desafio)
 );
 
-CREATE TABLE registro_atividade (
+CREATE TABLE IF NOT EXISTS registro_atividade (
 id_registro INTEGER PRIMARY KEY AUTOINCREMENT,
 id_inscricao INTEGER NOT NULL,
 data_atividade DATE NOT NULL,
@@ -39,7 +39,7 @@ FOREIGN KEY (id_inscricao) REFERENCES inscricao (id_inscricao)
 );
 
 -- Trigger simples para validar a data ao inserir a atividade
-CREATE TRIGGER validar_data_atividade
+CREATE TRIGGER IF NOT EXISTS validar_data_atividade
 BEFORE INSERT ON registro_atividade
 BEGIN
 SELECT RAISE(ABORT, 'A atividade deve ocorrer dentro do período do desafio.')
@@ -48,3 +48,6 @@ JOIN desafio AS d ON d.id_desafio = i.id_desafio
 WHERE i.id_inscricao = NEW.id_inscricao
 AND (NEW.data_atividade < d.data_inicio OR NEW.data_atividade > d.data_fim);
 END;
+
+CREATE UNIQUE INDEX IF NOT EXISTS uq_participante_email_normalizado
+ON participante (lower(trim(email)));

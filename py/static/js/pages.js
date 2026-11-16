@@ -1,5 +1,11 @@
 const CHAVE_PAGES = "Projeto-RitmoFit:demonstracao:v2";
 const CHAVE_PAGES_ANTERIOR = "Projeto-RitmoFit:demonstracao:v1";
+const LIMITE_EMAIL = 100;
+const LIMITE_DURACAO_ATIVIDADE = 1_440;
+const LIMITE_META_DESAFIO = 100_000;
+const LIMITE_DIAS_DESAFIO = 366;
+const MILISSEGUNDOS_POR_DIA = 86_400_000;
+const FORMATO_EMAIL = /^(?=[^@]{1,64}@)[a-z0-9!#$%&'*+\/=?^_\x60{|}~-]+(?:\.[a-z0-9!#$%&'*+\/=?^_\x60{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z][a-z0-9-]{0,61}[a-z0-9]$/i;
 
 const vinculosPages = {
   participantes: ["inscricoes", "id_participante", "Exclua as inscrições deste participante primeiro."],
@@ -112,9 +118,32 @@ function foraDoPeriodo(desafio, data) {
   return data < desafio.data_inicio || data > desafio.data_fim;
 }
 
+function lerDataPages(dados, campo) {
+  const valor = typeof dados[campo] === "string" ? dados[campo].trim() : "";
+  if (!valor) throw new Error("Preencha o campo " + campo + " com texto.");
+  const data = dataUTC(valor);
+  if (valor.startsWith("0000-") || Number.isNaN(data.getTime()) || data.toISOString().slice(0, 10) !== valor) {
+    throw new Error("Informe uma data válida no formato AAAA-MM-DD em " + campo + ".");
+  }
+  return valor;
+}
+
+function validarMinutosPages(dados, campo, limite, erroLimite) {
+  const valor = dados[campo];
+  if (!Number.isInteger(valor) || valor < 1) {
+    throw new Error("Informe um número inteiro positivo no campo " + campo + ".");
+  }
+  if (valor > limite) throw new Error(erroLimite);
+}
+
 function validarRegistroPages(listas, tipo, dados, atual) {
   if (tipo === "participantes") {
-    if (listas.participantes.some((p) => p !== atual && p.email === dados.email)) {
+    const email = typeof dados.email === "string" ? dados.email.trim() : "";
+    if (!email) throw new Error("Preencha o campo email com texto.");
+    if (email.length > LIMITE_EMAIL) throw new Error("O campo email aceita até " + LIMITE_EMAIL + " caracteres.");
+    if (!FORMATO_EMAIL.test(email)) throw new Error("Informe um e-mail válido.");
+    dados.email = email.toLowerCase();
+    if (listas.participantes.some((p) => p !== atual && p.email.trim().toLowerCase() === dados.email)) {
       throw new Error("Já existe um participante com esse e-mail.");
     }
   } else if (tipo === "modalidades") {
@@ -122,6 +151,19 @@ function validarRegistroPages(listas, tipo, dados, atual) {
       throw new Error("Essa modalidade já está cadastrada.");
     }
   } else if (tipo === "desafios") {
+    dados.data_inicio = lerDataPages(dados, "data_inicio");
+    dados.data_fim = lerDataPages(dados, "data_fim");
+    validarMinutosPages(
+      dados, "meta_minutos", LIMITE_META_DESAFIO,
+      "A meta do desafio deve ser de até " + LIMITE_META_DESAFIO + " minutos."
+    );
+    if (dados.data_fim < dados.data_inicio) {
+      throw new Error("A data de fim deve ser igual ou posterior à data de início.");
+    }
+    const dias = (dataUTC(dados.data_fim) - dataUTC(dados.data_inicio)) / MILISSEGUNDOS_POR_DIA + 1;
+    if (dias > LIMITE_DIAS_DESAFIO) {
+      throw new Error("O período do desafio deve ser de até " + LIMITE_DIAS_DESAFIO + " dias.");
+    }
     buscarNoBancoPages(listas, "modalidades", dados.id_modalidade, "Modalidade não encontrada.");
     if (atual) {
       const inscricoes = listas.inscricoes.filter((i) => i.id_desafio === atual.id_desafio);
@@ -132,6 +174,10 @@ function validarRegistroPages(listas, tipo, dados, atual) {
       if (fora) throw new Error("O período precisa incluir as atividades já registradas.");
     }
   } else if (tipo === "inscricoes") {
+    dados.data_inscricao = lerDataPages(dados, "data_inscricao");
+    if (dados.data_inscricao > dataDeHoje()) {
+      throw new Error("A data da inscrição deve ser igual ou anterior a hoje.");
+    }
     buscarNoBancoPages(listas, "participantes", dados.id_participante, "Participante não encontrado.");
     buscarNoBancoPages(listas, "desafios", dados.id_desafio, "Desafio não encontrado.");
     const repetida = listas.inscricoes.some((i) =>
@@ -143,6 +189,11 @@ function validarRegistroPages(listas, tipo, dados, atual) {
       throw new Error("Inscrições com atividades podem ter apenas a data editada.");
     }
   } else if (tipo === "atividades") {
+    dados.data_atividade = lerDataPages(dados, "data_atividade");
+    validarMinutosPages(
+      dados, "duracao_minutos", LIMITE_DURACAO_ATIVIDADE,
+      "A duração da atividade deve ser de até " + LIMITE_DURACAO_ATIVIDADE + " minutos."
+    );
     const inscricao = buscarNoBancoPages(listas, "inscricoes", dados.id_inscricao, "Inscrição não encontrada.");
     const desafio = buscarNoBancoPages(listas, "desafios", inscricao.id_desafio, "Desafio não encontrado.");
     if (foraDoPeriodo(desafio, dados.data_atividade)) {
@@ -199,6 +250,7 @@ async function solicitarPages(caminho, metodo, dados) {
     return { mensagem: "Registro excluído." };
   }
 
+  dados = { ...dados };
   validarRegistroPages(banco.listas, tipo, dados, lista[posicao]);
   fixarDatasPages(banco, tipo, lista[posicao]);
   fixarDatasPages(banco, tipo, dados);
