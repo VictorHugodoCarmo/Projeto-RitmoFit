@@ -18,8 +18,8 @@ O esquema SQLite contém cinco tabelas e quatro chaves estrangeiras. Cada partic
 
 ## Modelagem
 
-- **Modelo conceitual** — `docs/modelo_conceitual.png`, com entidades, atributos, relacionamentos e cardinalidades.
-- **Modelo lógico** — `docs/modelo_logico.png`, com tabelas, campos, chaves primárias, chaves estrangeiras e relacionamentos.
+- [Modelo conceitual](docs/modelo_conceitual.png), com entidades, atributos, relacionamentos e cardinalidades.
+- [Modelo lógico](docs/modelo_logico.png), com tabelas, campos, chaves primárias, chaves estrangeiras e relacionamentos.
 - **Modelo físico** — [banco/ritmofit.sql](banco/ritmofit.sql), com a criação das tabelas e das restrições.
 - **Diagrama de classes** — [docs/diagrama_classes.pdf](docs/diagrama_classes.pdf), com as classes, os atributos, os métodos e as multiplicidades.
 
