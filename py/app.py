@@ -20,7 +20,7 @@ from demonstracao import preparar_demonstracao
 from models import Desafio, Inscricao, Modalidade, Participante, RegistroAtividade
 
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder="../static")
 MODO_DEMO = __name__ == "__main__" and "--demo" in sys.argv[1:]
 BANCO = RAIZ_PROJETO / "ritmofit-demo.db" if MODO_DEMO else CAMINHO_BANCO
 participante_dao = ParticipanteDAO(BANCO)
