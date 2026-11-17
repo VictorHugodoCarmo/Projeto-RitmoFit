@@ -2,7 +2,6 @@ import json
 from datetime import date
 from hashlib import sha256
 from pathlib import Path
-from shutil import copytree
 from tempfile import TemporaryDirectory
 
 import app as sistema
@@ -16,8 +15,7 @@ DATA_BASE_PAGES = date(2026, 11, 12)
 
 def gerar_pages():
     destino = sistema.RAIZ_PROJETO
-    pasta_estatica = destino / "docs" / "static"
-    copytree(Path(sistema.app.static_folder), pasta_estatica, dirs_exist_ok=True)
+    pasta_estatica = Path(sistema.app.static_folder)
     (destino / ".nojekyll").touch()
 
     def url_estatica(endpoint, filename):
@@ -28,7 +26,7 @@ def gerar_pages():
         if arquivo.suffix in (".css", ".js"):
             conteudo = conteudo.replace(b"\r\n", b"\n")
         versao = sha256(conteudo).hexdigest()[:12]
-        return f"./docs/static/{filename}?v={versao}"
+        return f"./static/{filename}?v={versao}"
 
     with sistema.app.app_context():
         modelo = sistema.app.jinja_env.get_template("index.html")
