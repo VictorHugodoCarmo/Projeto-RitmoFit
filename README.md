@@ -57,16 +57,16 @@ A demonstração online permite cadastrar, editar e excluir registros, filtrar d
 
 No GitHub, abra **Settings → Pages**. Em **Source**, escolha **Deploy from a branch** e selecione a branch **main** e a pasta **/ (root)**. O GitHub Pages abre o `index.html` na raiz.
 
-Para atualizar a versão online depois de alterar a interface, execute `python .\py\gerar_pages.py` no Windows ou `python3 py/gerar_pages.py` no Linux e no macOS. Inclua no commit o `index.html` e os arquivos atualizados de `dados/` e `docs/static/`.
+O Flask e o GitHub Pages usam a mesma pasta `static/` na raiz. Para atualizar a versão online depois de alterar a interface, execute `python .\py\gerar_pages.py` no Windows ou `python3 py/gerar_pages.py` no Linux e no macOS. Inclua no commit o `index.html` regenerado e os arquivos que mudaram em `static/` e `dados/`.
 
 ## Organização
 
 | Arquivo | Responsabilidade |
 |---|---|
 | [py/templates/index.html](py/templates/index.html) | Painel, listas e formulários em HTML |
-| [py/static/css/estilo.css](py/static/css/estilo.css) | Layout responsivo e identidade visual |
-| [py/static/js/ritmofit.js](py/static/js/ritmofit.js) | Envio de formulários, Fetch e atualização das listas |
-| [py/static/js/pages.js](py/static/js/pages.js) | Armazenamento e validações da demonstração no navegador |
+| [static/css/estilo.css](static/css/estilo.css) | Layout responsivo e identidade visual |
+| [static/js/ritmofit.js](static/js/ritmofit.js) | Envio de formulários, Fetch e atualização das listas |
+| [static/js/pages.js](static/js/pages.js) | Armazenamento e validações da demonstração no navegador |
 | [py/app.py](py/app.py) | Página inicial e rotas Flask que recebem e devolvem JSON |
 | [py/models.py](py/models.py) | Classes do RitmoFit e cálculo de progresso |
 | [py/dao.py](py/dao.py) | Operações no SQLite |
